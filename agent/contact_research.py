@@ -1,20 +1,19 @@
-import re
-import requests
 from email_validator import validate_email, EmailNotValidError
 from typing import List, Dict, Optional
 import config
+import anthropic
 
 
 class ContactResearcher:
-    """Handles web search and contact extraction for schools."""
+    """Handles web search and contact extraction using Claude's native web search tool."""
 
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.base_url = "https://api.search.brave.com/res/v1/web/search"
+    def __init__(self, brave_api_key: str, anthropic_api_key: str):
+        # Note: brave_api_key is no longer used but kept for compatibility
+        self.anthropic_client = anthropic.Anthropic(api_key=anthropic_api_key)
 
     def research_contacts(self, school_name: str, school_data: Dict) -> List[Dict]:
         """
-        Research and find contacts for a school.
+        Research and find contacts for a school using Claude's web search.
 
         Args:
             school_name: Name of the school
@@ -23,11 +22,10 @@ class ContactResearcher:
         Returns:
             List of contact dictionaries with name, email, title, confidence
         """
-        # Search for contacts
-        search_results = self._search_for_contacts(school_name)
+        print(f"  Using Claude's native web search to find contacts...")
 
-        # Extract contacts from search results
-        contacts = self._extract_contacts(search_results, school_name)
+        # Use Claude with web search tool to find contacts
+        contacts = self._search_and_extract_contacts(school_name)
 
         # Validate and score contacts
         validated_contacts = []
@@ -38,96 +36,95 @@ class ContactResearcher:
 
         # If we don't have enough contacts, add generic ones as fallback
         if len(validated_contacts) < 2:
-            print(f"  Warning: Only found {len(validated_contacts)} contacts for {school_name}, adding generic contacts")
+            print(f"  Warning: Only found {len(validated_contacts)} real contacts for {school_name}, adding generic contacts")
             validated_contacts.extend(self._generate_generic_contacts(school_name, len(validated_contacts)))
 
         return validated_contacts[:config.MAX_CONTACTS_PER_SCHOOL]
 
-    def _search_for_contacts(self, school_name: str) -> List[Dict]:
-        """Search for school contacts using Brave Search API."""
-        query = f'"{school_name}" principal OR dean OR superintendent contact email'
+    def _search_and_extract_contacts(self, school_name: str) -> List[Dict]:
+        """Use Claude's web search to find and extract contacts."""
 
-        headers = {
-            "Accept": "application/json",
-            "Accept-Encoding": "gzip",
-            "X-Subscription-Token": self.api_key
-        }
+        prompt = f"""Find contact information for administrators at "{school_name}".
 
-        params = {
-            "q": query,
-            "count": config.SEARCH_RESULTS_LIMIT
-        }
+I need 2-3 key decision-makers such as:
+- Principal
+- Dean
+- Superintendent
+- Head of School
+- Director
+
+For each person, find:
+1. Full name (First Last)
+2. Email address
+3. Job title
+
+Search for this information on the school's official website and staff directories.
+
+Return your findings as JSON:
+{{
+  "contacts": [
+    {{
+      "name": "John Smith",
+      "email": "jsmith@school.edu",
+      "title": "Principal"
+    }}
+  ]
+}}
+
+Only include contacts where you found both a real name and a valid email address. Do not make up or guess information."""
 
         try:
-            response = requests.get(self.base_url, headers=headers, params=params, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            return data.get("web", {}).get("results", [])
+            response = self.anthropic_client.messages.create(
+                model=config.MODEL,
+                max_tokens=2000,
+                temperature=0.3,
+                messages=[{"role": "user", "content": prompt}],
+                tools=[{
+                    "type": "web_search_20250305",
+                    "name": "web_search",
+                    "max_uses": 5
+                }]
+            )
+
+            # Extract text from response
+            response_text = ""
+            for content_block in response.content:
+                if hasattr(content_block, 'text'):
+                    response_text += content_block.text
+
+            # Log search usage
+            usage = response.usage
+            if hasattr(usage, 'server_tool_use'):
+                search_count = getattr(usage.server_tool_use, 'web_search_requests', 0)
+                print(f"  Performed {search_count} web searches")
+
+            # Parse JSON response
+            import json
+            # Extract JSON from response (handle markdown code blocks)
+            if "```json" in response_text:
+                response_text = response_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in response_text:
+                response_text = response_text.split("```")[1].split("```")[0].strip()
+
+            data = json.loads(response_text)
+            contacts = []
+
+            for contact in data.get("contacts", []):
+                if contact.get("name") and contact.get("email"):
+                    contacts.append({
+                        'email': contact['email'].lower(),
+                        'name': contact['name'],
+                        'title': contact.get('title', ''),
+                        'source_url': '',
+                        'school_name': school_name
+                    })
+
+            print(f"  Extracted {len(contacts)} contacts from web search")
+            return contacts
+
         except Exception as e:
-            print(f"Search error for {school_name}: {str(e)}")
+            print(f"  Error during web search and extraction: {str(e)}")
             return []
-
-    def _extract_contacts(self, search_results: List[Dict], school_name: str) -> List[Dict]:
-        """Extract contact information from search results."""
-        contacts = []
-        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-
-        for result in search_results:
-            # Combine title and description for searching
-            text = f"{result.get('title', '')} {result.get('description', '')}"
-            url = result.get('url', '')
-
-            # Find emails in text
-            emails = re.findall(email_pattern, text)
-
-            # Look for names and titles
-            title_keywords = ['principal', 'dean', 'superintendent', 'president',
-                             'director', 'head of school', 'headmaster']
-
-            for email in emails:
-                # Try to extract name and title from context
-                contact = {
-                    'email': email.lower(),
-                    'name': self._extract_name_near_email(text, email),
-                    'title': self._extract_title(text, title_keywords),
-                    'source_url': url,
-                    'school_name': school_name
-                }
-
-                if contact['email'] and contact not in contacts:
-                    contacts.append(contact)
-
-        return contacts
-
-    def _extract_name_near_email(self, text: str, email: str) -> Optional[str]:
-        """Attempt to extract a name near an email address."""
-        # Look for capitalized words near the email
-        email_pos = text.find(email)
-        if email_pos == -1:
-            return None
-
-        # Get 100 chars before email
-        context = text[max(0, email_pos - 100):email_pos]
-
-        # Find capitalized words (potential names)
-        name_pattern = r'\b([A-Z][a-z]+ [A-Z][a-z]+)\b'
-        matches = re.findall(name_pattern, context)
-
-        return matches[-1] if matches else None
-
-    def _extract_title(self, text: str, keywords: List[str]) -> Optional[str]:
-        """Extract job title from text based on keywords."""
-        text_lower = text.lower()
-
-        for keyword in keywords:
-            if keyword in text_lower:
-                # Find the sentence containing the keyword
-                sentences = text.split('.')
-                for sentence in sentences:
-                    if keyword in sentence.lower():
-                        return keyword.title()
-
-        return None
 
     def _validate_contact(self, contact: Dict, school_name: str) -> Optional[Dict]:
         """

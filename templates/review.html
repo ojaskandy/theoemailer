@@ -13,11 +13,37 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-            background: #0a0e27;
+            background: #0f1419;
             color: #ffffff;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             padding: 40px 24px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(88, 166, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(35, 134, 54, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
         }
 
         .container {
@@ -31,19 +57,18 @@
             align-items: center;
             margin-bottom: 48px;
             padding-bottom: 24px;
-            border-bottom: 1px solid #2a3150;
+            border-bottom: 1px solid #30363d;
         }
 
         .header h1 {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 600;
-            letter-spacing: -1px;
         }
 
         .back-link {
-            color: #667eea;
+            color: #58a6ff;
             text-decoration: none;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         .back-link:hover {
@@ -56,14 +81,14 @@
             align-items: center;
             padding: 16px 0;
             margin-bottom: 32px;
-            font-size: 15px;
-            color: #a8b3cf;
+            font-size: 14px;
+            color: #8b949e;
         }
 
         .download-link {
-            color: #667eea;
+            color: #58a6ff;
             text-decoration: none;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         .download-link:hover {
@@ -71,16 +96,16 @@
         }
 
         .email-card {
-            border: 1px solid #2a3150;
-            border-radius: 8px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
             padding: 24px;
             margin-bottom: 16px;
-            background: #151932;
+            background: #0d1117;
         }
 
         .email-card.flagged {
             border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
+            background: rgba(245, 158, 11, 0.05);
         }
 
         .email-meta {
@@ -91,14 +116,14 @@
         }
 
         .email-meta h3 {
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 600;
             margin-bottom: 4px;
         }
 
         .email-meta p {
             font-size: 14px;
-            color: #a8b3cf;
+            color: #8b949e;
         }
 
         .badges {
@@ -143,22 +168,22 @@
 
         .form-group label {
             display: block;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 500;
             margin-bottom: 8px;
-            color: #a8b3cf;
+            color: #8b949e;
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #2a3150;
-            border-radius: 8px;
-            font-size: 15px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            font-size: 14px;
             font-family: inherit;
-            background: #0a0e27;
-            color: #ffffff;
+            background: #0d1117;
+            color: #c9d1d9;
             transition: border-color 0.2s;
         }
 
@@ -168,10 +193,15 @@
             resize: vertical;
         }
 
+        .form-group input:hover,
+        .form-group textarea:hover {
+            border-color: #8b949e;
+        }
+
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #58a6ff;
         }
 
         .metadata {
@@ -180,7 +210,7 @@
             gap: 16px;
             padding-top: 16px;
             margin-top: 16px;
-            border-top: 1px solid #2a3150;
+            border-top: 1px solid #30363d;
         }
 
         .metadata-item {
@@ -188,7 +218,7 @@
         }
 
         .metadata-label {
-            color: #a8b3cf;
+            color: #8b949e;
             margin-bottom: 4px;
         }
 
@@ -198,20 +228,45 @@
 
         .save-btn {
             padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #238636;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             margin-top: 12px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .save-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .save-btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .save-btn:hover {
+            background: #2ea043;
             transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+        }
+
+        .save-btn:active {
+            transform: translateY(0);
         }
 
         .empty-state {
@@ -220,53 +275,52 @@
         }
 
         .empty-state h2 {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 600;
             margin-bottom: 12px;
         }
 
         .empty-state p {
-            font-size: 17px;
-            color: #86868b;
+            font-size: 14px;
+            color: #8b949e;
             margin-bottom: 24px;
         }
 
         .empty-state a {
             display: inline-block;
-            padding: 12px 24px;
-            background: #0071e3;
+            padding: 10px 20px;
+            background: #238636;
             color: white;
             text-decoration: none;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: background 0.2s;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .empty-state a:hover {
-            background: #0077ed;
+            background: #2ea043;
         }
 
         .final-download {
             margin-top: 48px;
             padding-top: 32px;
-            border-top: 1px solid #d2d2d7;
+            border-top: 1px solid #30363d;
             text-align: center;
         }
 
         .final-download-btn {
             display: inline-block;
-            padding: 16px 32px;
-            background: #1d1d1f;
+            padding: 12px 24px;
+            background: #21262d;
             color: white;
             text-decoration: none;
-            border-radius: 8px;
-            font-size: 17px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 500;
-            transition: background 0.2s;
         }
 
         .final-download-btn:hover {
-            background: #2d2d2f;
+            background: #30363d;
         }
 
         @media (max-width: 768px) {

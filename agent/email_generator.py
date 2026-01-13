@@ -1,4 +1,5 @@
 import time
+import random
 from typing import Dict, List
 import config
 from .contact_research import ContactResearcher
@@ -10,7 +11,7 @@ class EmailGenerator:
     """Main orchestrator for the email generation pipeline."""
 
     def __init__(self, anthropic_key: str, brave_key: str):
-        self.contact_researcher = ContactResearcher(brave_key)
+        self.contact_researcher = ContactResearcher(brave_key, anthropic_key)
         self.email_writer = EmailWriter(anthropic_key)
         self.quality_control = QualityControl()
 
@@ -57,6 +58,14 @@ class EmailGenerator:
         """Process a single school through the full pipeline."""
         school_name = school_data.get('School name', 'Unknown School')
 
+        # Generate random number (3-5) for this school - MUST be consistent across all contacts
+        random_number = random.randint(3, 5)
+        print(f"  Using random number {random_number} for all contacts at {school_name}")
+
+        # Add to school data so it's available in email generation
+        school_data_with_number = school_data.copy()
+        school_data_with_number['_random_number_for_template'] = random_number
+
         # Step 1: Research contacts
         print(f"  Researching contacts for {school_name}...")
         contacts = self.contact_researcher.research_contacts(school_name, school_data)
@@ -71,12 +80,12 @@ class EmailGenerator:
                 'warning': 'No contacts found'
             }
 
-        # Step 2: Generate email for each contact
+        # Step 2: Generate email for each contact (using same random number)
         emails = []
         for contact in contacts:
             print(f"  Generating email for {contact.get('name') or contact.get('email')}...")
             email_result = self._generate_and_validate_email(
-                template, school_data, contact
+                template, school_data_with_number, contact
             )
             emails.append(email_result)
 

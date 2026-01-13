@@ -80,6 +80,9 @@ class EmailWriter:
         contact_name = contact.get('name') or 'Administrator'
         contact_title = contact.get('title') or 'Administrator'
 
+        # Extract random number if provided
+        random_number = school_data.get('_random_number_for_template', 3)
+
         prompt = f"""You are writing a cold outreach email on behalf of a student founder from Theo, an agentic teaching assistant platform (https://trytheo.org).
 
 CRITICAL REQUIREMENTS:
@@ -88,6 +91,14 @@ CRITICAL REQUIREMENTS:
 3. Follow the template structure and guidelines exactly
 4. Maintain a humble, earnest student founder tone
 5. Keep the email concise and focused
+
+GREETING FORMAT (VERY IMPORTANT):
+- If the recipient is a regular person (Principal, Dean, Superintendent, etc.): Use "Hi [FirstName],"
+  Example: "Hi Sarah," or "Hi Michael,"
+- If the recipient has a PhD or doctorate: Use "Hi Dr. [LastName],"
+  Example: "Hi Dr. Johnson," or "Hi Dr. Williams,"
+- NEVER use "Hi [Title]" or "Hi [Team/Department]" - ALWAYS use the person's actual name
+- If you don't have a real first name, you're doing something wrong - the contact should have a real name
 
 TEMPLATE AND GUIDELINES:
 {template}
@@ -100,6 +111,10 @@ RECIPIENT:
 - Title: {contact_title}
 - School: {school_data.get('School name', '')}
 
+IMPORTANT - CONSISTENT NUMBER FOR THIS SCHOOL:
+Use the number {random_number} wherever the template requires a random number (e.g., "X teachers are in schools similar to...").
+ALL emails for this school MUST use {random_number} - this is non-negotiable.
+
 {f"FEEDBACK FROM PREVIOUS ATTEMPT (address these issues):{retry_feedback}" if retry_feedback else ""}
 
 Generate a personalized cold outreach email. Format your response as:
@@ -107,7 +122,7 @@ Generate a personalized cold outreach email. Format your response as:
 SUBJECT: [Your subject line]
 
 BODY:
-[Your email body]
+[Your email body - must start with proper greeting using recipient's actual name]
 
 Remember: Be respectful, accurate, and follow the template. You represent a student founder, so the tone should be earnest and professional but not overly formal."""
 

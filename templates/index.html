@@ -13,164 +13,194 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-            background: #0a0e27;
+            background: #0f1419;
             color: #ffffff;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .hero {
-            text-align: center;
-            padding: 100px 24px 60px;
-            background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%);
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(88, 166, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(35, 134, 54, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse 8s ease-in-out infinite;
         }
 
-        .hero h1 {
-            font-size: 120px;
-            font-weight: 600;
-            letter-spacing: -4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-            text-shadow: 0 0 80px rgba(102, 126, 234, 0.5);
-        }
-
-        .hero p {
-            font-size: 21px;
-            color: #a8b3cf;
-            font-weight: 400;
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
         }
 
         .container {
-            max-width: 680px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 600px;
             margin: 0 auto;
-            padding: 0 24px 80px;
+            padding: 80px 24px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 48px;
         }
 
         .section {
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
         .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #a8b3cf;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #8b949e;
         }
 
         input[type="file"] {
             width: 100%;
-            padding: 16px;
-            border: 1px solid #2a3150;
-            border-radius: 8px;
-            font-size: 15px;
-            background: #151932;
-            color: #ffffff;
+            padding: 12px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #0d1117;
+            color: #c9d1d9;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
         input[type="file"]:hover {
-            border-color: #667eea;
-            background: #1a1f3a;
-        }
-
-        input[type="file"]:focus {
-            outline: none;
-            border-color: #667eea;
+            border-color: #8b949e;
+            background: #161b22;
         }
 
         textarea {
             width: 100%;
-            padding: 16px;
-            border: 1px solid #2a3150;
-            border-radius: 8px;
-            font-size: 15px;
+            padding: 12px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            font-size: 14px;
             font-family: 'SF Mono', Monaco, monospace;
-            background: #151932;
-            color: #ffffff;
+            background: #0d1117;
+            color: #c9d1d9;
             resize: vertical;
-            transition: all 0.2s;
-            line-height: 1.6;
+            line-height: 1.5;
+            transition: all 0.2s ease;
         }
 
         textarea:hover {
-            border-color: #667eea;
-            background: #1a1f3a;
+            border-color: #8b949e;
+            background: #161b22;
         }
 
-        textarea:focus {
+        textarea:focus,
+        input:focus {
             outline: none;
-            border-color: #667eea;
-        }
-
-        textarea::placeholder {
-            color: #6b7280;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
         }
 
         .hint {
-            font-size: 13px;
-            color: #6b7280;
-            margin-top: 8px;
+            font-size: 12px;
+            color: #6e7681;
+            margin-top: 6px;
         }
 
         .btn {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px;
+            background: #238636;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 17px;
-            font-weight: 600;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn:hover {
+            background: #2ea043;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn:disabled {
-            background: #2a3150;
+            background: #21262d;
+            color: #6e7681;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #1a1f3a 0%, #2a3150 100%);
-            box-shadow: none;
+            background: #21262d;
         }
 
         .btn-secondary:hover {
-            background: linear-gradient(135deg, #2a3150 0%, #3a4160 100%);
-            box-shadow: 0 4px 15px rgba(42, 49, 80, 0.6);
+            background: #30363d;
         }
 
         .success-message {
-            padding: 16px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 8px;
-            margin-bottom: 24px;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            margin-bottom: 16px;
             display: none;
-            font-size: 15px;
-            color: #10b981;
+            font-size: 14px;
+            color: #7ee787;
         }
 
         .success-message.show {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .success-message::before {
+            content: "●";
+            color: #3fb950;
         }
 
         .card {
             display: none;
-            margin-top: 48px;
+            margin-top: 32px;
         }
 
         .card.show {
@@ -180,7 +210,7 @@
         .progress {
             display: none;
             text-align: center;
-            padding: 40px 0;
+            padding: 32px 0;
         }
 
         .progress.show {
@@ -188,13 +218,13 @@
         }
 
         .spinner {
-            width: 24px;
-            height: 24px;
-            margin: 0 auto 16px;
-            border: 2px solid #2a3150;
-            border-top-color: #667eea;
+            width: 16px;
+            height: 16px;
+            margin: 0 auto 12px;
+            border: 2px solid #30363d;
+            border-top-color: #58a6ff;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.6s linear infinite;
         }
 
         @keyframes spin {
@@ -202,39 +232,35 @@
         }
 
         .progress-text {
-            font-size: 15px;
-            color: #a8b3cf;
+            font-size: 14px;
+            color: #8b949e;
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1px;
-            background: #2a3150;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 24px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
         .stat {
-            background: #151932;
-            padding: 24px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            padding: 16px;
+            border-radius: 6px;
             text-align: center;
         }
 
         .stat-value {
-            font-size: 36px;
+            font-size: 24px;
             font-weight: 600;
             margin-bottom: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff;
         }
 
         .stat-label {
-            font-size: 13px;
-            color: #a8b3cf;
+            font-size: 12px;
+            color: #8b949e;
         }
 
         .button-group {
@@ -252,14 +278,6 @@
         }
 
         @media (max-width: 640px) {
-            .hero {
-                padding: 60px 20px 40px;
-            }
-
-            .hero h1 {
-                font-size: 72px;
-            }
-
             .stats {
                 grid-template-columns: 1fr;
             }
@@ -271,23 +289,20 @@
     </style>
 </head>
 <body>
-    <div class="hero">
-        <h1>Theo</h1>
-        <p>Email automation</p>
-    </div>
-
     <div class="container">
+        <div class="logo">Theo</div>
+
         <form id="uploadForm">
             <div class="section">
                 <div class="section-title">School data</div>
                 <input type="file" id="csvFile" accept=".csv" required>
-                <p class="hint">CSV file with your school research</p>
+                <p class="hint">CSV file with your research</p>
             </div>
 
             <div class="section">
                 <div class="section-title">Email template</div>
-                <textarea id="template" rows="12" placeholder="Paste your template here..." required></textarea>
-                <p class="hint">Guidelines and structure for your emails</p>
+                <textarea id="template" rows="10" placeholder="Paste your template here..." required></textarea>
+                <p class="hint">Guidelines and structure</p>
             </div>
 
             <button type="submit" class="btn" id="uploadBtn">Continue</button>
@@ -302,7 +317,7 @@
 
             <div class="progress" id="progress">
                 <div class="spinner"></div>
-                <p class="progress-text">Generating emails...</p>
+                <p class="progress-text">Generating...</p>
             </div>
         </div>
 
@@ -323,8 +338,8 @@
             </div>
 
             <div class="button-group">
-                <a href="/review" class="btn" style="text-decoration: none; text-align: center; line-height: 20px;">Review</a>
-                <a href="/download" class="btn btn-secondary" style="text-decoration: none; text-align: center; line-height: 20px;">Download</a>
+                <a href="/review" class="btn" style="text-decoration: none; text-align: center; line-height: 16px; display: block;">Review</a>
+                <a href="/download" class="btn btn-secondary" style="text-decoration: none; text-align: center; line-height: 16px; display: block;">Download</a>
             </div>
         </div>
     </div>
