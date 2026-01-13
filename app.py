@@ -72,7 +72,37 @@ def upload():
 
         # Parse CSV
         df = pd.read_csv(csv_path)
-        schools = df.to_dict('records')
+
+        # Parse schools with embedded contacts
+        schools = []
+        for _, row in df.iterrows():
+            school_dict = row.to_dict()
+
+            # Extract contacts if provided (Contact 1 Name, Contact 1 Email, etc.)
+            contacts = []
+            for i in range(1, 6):  # Support up to 5 contacts
+                name_col = f'Contact {i} Name'
+                email_col = f'Contact {i} Email'
+                title_col = f'Contact {i} Title'
+                bio_col = f'Contact {i} Bio'
+
+                if name_col in school_dict and pd.notna(school_dict[name_col]) and school_dict[name_col]:
+                    contact = {
+                        'name': str(school_dict[name_col]).strip(),
+                        'email': str(school_dict.get(email_col, '')).strip() if pd.notna(school_dict.get(email_col)) else '',
+                        'title': str(school_dict.get(title_col, '')).strip() if pd.notna(school_dict.get(title_col)) else '',
+                        'bio': str(school_dict.get(bio_col, '')).strip() if pd.notna(school_dict.get(bio_col)) else '',
+                        'confidence': 100,  # Pre-researched contacts are high confidence
+                        'source': 'CSV (pre-researched)',
+                        'flagged': False
+                    }
+                    contacts.append(contact)
+
+            # Add pre-researched contacts to school data
+            if contacts:
+                school_dict['_preresearched_contacts'] = contacts
+
+            schools.append(school_dict)
 
         # Store in session file
         session_data = {
@@ -104,8 +134,13 @@ def generate():
         # Check API keys
         if not config.ANTHROPIC_API_KEY:
             return jsonify({'error': 'ANTHROPIC_API_KEY not configured'}), 500
-        if not config.BRAVE_API_KEY:
-            return jsonify({'error': 'BRAVE_API_KEY not configured'}), 500
+
+        # Only require Brave API if we need to do web search
+        has_preresearched_contacts = all(
+            school.get('_preresearched_contacts') for school in schools
+        )
+        if not has_preresearched_contacts and not config.BRAVE_API_KEY:
+            return jsonify({'error': 'BRAVE_API_KEY not configured (required for contact research)'}), 500
 
         # Get data from session
         schools = session_data.get('schools')

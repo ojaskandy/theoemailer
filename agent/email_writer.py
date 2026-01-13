@@ -79,6 +79,7 @@ class EmailWriter:
         # Format contact info
         contact_name = contact.get('name') or 'Administrator'
         contact_title = contact.get('title') or 'Administrator'
+        contact_bio = contact.get('bio', '')
 
         # Extract random number if provided
         random_number = school_data.get('_random_number_for_template', 3)
@@ -113,6 +114,10 @@ RECIPIENT:
 - Name: {contact_name}
 - Title: {contact_title}
 - School: {school_data.get('School name', '')}
+{f"- Background: {contact_bio}" if contact_bio else ""}
+
+PERSONALIZATION GUIDANCE:
+{f"Use the recipient's background to personalize the email. Reference relevant experience like prior schools, EdTech adoption, gifted programs, or academic credentials when appropriate. Make it feel researched, not generic." if contact_bio else "No background info available - focus on school-specific pain points from the data above."}
 
 IMPORTANT - CONSISTENT NUMBER FOR THIS SCHOOL:
 Use the number {random_number} wherever the template requires a random number (e.g., "X teachers are in schools similar to...").

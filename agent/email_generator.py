@@ -78,23 +78,30 @@ class EmailGenerator:
         school_data_with_number = school_data.copy()
         school_data_with_number['_random_number_for_template'] = random_number
 
-        # Step 1: Research contacts
-        update_progress("searching", "Finding contacts via web search...")
-        print(f"  Researching contacts for {school_name}...")
-        contacts = self.contact_researcher.research_contacts(school_name, school_data)
+        # Step 1: Get contacts (use pre-researched if available, else do web search)
+        if '_preresearched_contacts' in school_data and school_data['_preresearched_contacts']:
+            # Use contacts from CSV
+            contacts = school_data['_preresearched_contacts']
+            print(f"  Using {len(contacts)} pre-researched contacts from CSV")
+            update_progress("found_contacts", f"Using {len(contacts)} pre-researched contacts")
+        else:
+            # Fall back to web search
+            update_progress("searching", "Finding contacts via web search...")
+            print(f"  Researching contacts for {school_name}...")
+            contacts = self.contact_researcher.research_contacts(school_name, school_data)
 
-        if not contacts:
-            print(f"  ⚠️  No contacts found for {school_name}")
-            update_progress("warning", "No contacts found")
-            return {
-                'school_name': school_name,
-                'school_data': school_data,
-                'contacts': [],
-                'emails': [],
-                'warning': 'No contacts found'
-            }
+            if not contacts:
+                print(f"  ⚠️  No contacts found for {school_name}")
+                update_progress("warning", "No contacts found")
+                return {
+                    'school_name': school_name,
+                    'school_data': school_data,
+                    'contacts': [],
+                    'emails': [],
+                    'warning': 'No contacts found'
+                }
 
-        update_progress("found_contacts", f"Found {len(contacts)} contacts")
+            update_progress("found_contacts", f"Found {len(contacts)} contacts")
 
         # Step 2: Generate email for each contact (using same random number)
         emails = []
