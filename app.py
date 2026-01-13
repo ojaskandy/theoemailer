@@ -326,12 +326,19 @@ def download():
         # Create DataFrame
         df = pd.DataFrame(export_data)
 
-        # Save to CSV
+        # Save to CSV with proper quoting for long text fields
+        import csv
         output_path = os.path.join(
             config.OUTPUT_FOLDER,
             f'theo_emails_{session_id}.csv'
         )
-        df.to_csv(output_path, index=False)
+        df.to_csv(
+            output_path,
+            index=False,
+            quoting=csv.QUOTE_ALL,  # Quote all fields to preserve newlines and special chars
+            escapechar='\\',
+            encoding='utf-8-sig'  # UTF-8 with BOM for Excel compatibility
+        )
 
         return send_file(output_path, as_attachment=True, download_name='theo_emails.csv')
 

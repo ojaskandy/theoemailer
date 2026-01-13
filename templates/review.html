@@ -306,6 +306,10 @@
             padding-top: 32px;
             border-top: 1px solid #30363d;
             text-align: center;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .final-download-btn {
@@ -317,10 +321,24 @@
             border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
+            border: none;
+            cursor: pointer;
         }
 
         .final-download-btn:hover {
             background: #30363d;
+        }
+
+        .copy-all-btn {
+            background: #238636;
+        }
+
+        .copy-all-btn:hover {
+            background: #2ea043;
+        }
+
+        .copy-all-btn.copied {
+            background: #1f6feb;
         }
 
         @media (max-width: 768px) {
@@ -423,7 +441,8 @@
         {% endfor %}
 
         <div class="final-download">
-            <a href="/download" class="final-download-btn">Download all</a>
+            <a href="/download" class="final-download-btn">Download CSV</a>
+            <button onclick="copyAllEmails()" class="final-download-btn copy-all-btn" id="copyAllBtn">Copy All</button>
         </div>
 
         {% else %}
@@ -491,6 +510,46 @@
                 }, 3000);
             });
         });
+
+        function copyAllEmails() {
+            // Gather all emails in a formatted text
+            const emails = [];
+
+            document.querySelectorAll('.email-card').forEach((card, index) => {
+                const recipient = card.querySelector('h3').textContent;
+                const school = card.querySelector('p').textContent.replace('School: ', '');
+                const subject = card.querySelector('input[data-field="Subject"]').value;
+                const body = card.querySelector('textarea[data-field="Body"]').value;
+
+                emails.push(`================================================================================
+EMAIL ${index + 1}: ${recipient}
+SCHOOL: ${school}
+================================================================================
+SUBJECT: ${subject}
+
+BODY:
+${body}
+`);
+            });
+
+            const allText = emails.join('\n\n');
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(allText).then(() => {
+                const btn = document.getElementById('copyAllBtn');
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard. Please try again.');
+            });
+        }
     </script>
 </body>
 </html>
