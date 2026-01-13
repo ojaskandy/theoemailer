@@ -44,41 +44,53 @@ class ContactResearcher:
     def _search_and_extract_contacts(self, school_name: str) -> List[Dict]:
         """Use Claude's web search to find and extract contacts."""
 
-        prompt = f"""Find contact information for administrators at "{school_name}".
+        prompt = f"""Find the names and contact information for administrators at "{school_name}".
 
-I need 2-3 key decision-makers. Search for these specific roles:
+YOUR TASK: Find 2-3 real administrators with their REAL NAMES. This is easy - every school publicly lists their leadership.
+
+SEARCH STRATEGY (do multiple searches):
+1. Search: "{school_name} head of school" - find the Head of School/Principal name
+2. Search: "{school_name} leadership team" - find the leadership page
+3. Search: "{school_name} administration" - find admin staff
+4. Search: "{school_name} directory" - find staff directory
+5. Search: "{school_name} [specific role]" if needed
+
+ROLES TO FIND (pick 2-3):
 - Head of School / Principal / Headmaster
-- Dean of Academics / Academic Dean
-- Director of Curriculum / Director of Technology
-- Assistant Head / Associate Head
-- Division Head (Upper School, Middle School, etc.)
+- Director of Technology / IT Director
+- Head of Upper School / Head of Middle School / Head of Lower School
+- Dean of Academics / Academic Dean / Dean of Faculty
+- Assistant Head / Associate Head of School
+- Director of Curriculum / Director of Innovation
+- Chief Academic Officer / CFO / COO
 
-IMPORTANT SEARCH STRATEGY:
-1. First search for "{school_name} leadership team" or "{school_name} administration"
-2. Then search for "{school_name} staff directory"
-3. Look for the school's official website faculty/staff pages
+For each person, provide:
+1. Full name (First Last) - THIS IS REQUIRED AND EASY TO FIND
+2. Email - guess it using school domain + common patterns (flast@, first.last@, firstlast@)
+3. Title - their actual job title
 
-For each person you find, provide:
-1. Full name (First Last) - REQUIRED
-2. Email address - if you can find it or construct it from the school's email pattern (e.g., first initial + last name @school.org)
-3. Job title - REQUIRED
-
-Return your findings as JSON:
+Return as JSON:
 {{
   "contacts": [
     {{
       "name": "John Smith",
-      "email": "jsmith@school.edu",
+      "email": "jsmith@schoolname.org",
       "title": "Head of School"
+    }},
+    {{
+      "name": "Sarah Johnson",
+      "email": "sjohnson@schoolname.org",
+      "title": "Director of Technology"
     }}
   ]
 }}
 
-CRITICAL RULES:
-- You MUST find at least 2 real people with real names
-- If you can't find an email, guess based on the school's domain and common patterns (firstlast@, first.last@, flast@)
-- School names are always findable on staff directories - keep searching until you find real names
-- Do NOT return empty results - school leadership is always public information"""
+CRITICAL:
+- Names are ALWAYS publicly available - keep searching until you find real names
+- Every private school has a leadership page with names and photos
+- Do NOT return "Administrator" or generic placeholders - find the actual person's name
+- If you can't find the exact email, GUESS it using the school's domain
+- Return at least 2 contacts with REAL NAMES"""
 
         try:
             response = self.anthropic_client.messages.create(
@@ -89,7 +101,7 @@ CRITICAL RULES:
                 tools=[{
                     "type": "web_search_20250305",
                     "name": "web_search",
-                    "max_uses": 3  # Reduced from 5 for speed
+                    "max_uses": 7  # More searches = better accuracy for finding real names
                 }]
             )
 
