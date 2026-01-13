@@ -4,43 +4,418 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Review Emails - Theo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <header class="mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-4xl font-bold text-gray-900 mb-2">Review Generated Emails</h1>
-                <p class="text-gray-600">Review and edit emails before exporting</p>
-            </div>
-            <a
-                href="/"
-                class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition"
-            >
-                ← Back
-            </a>
-        </header>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        {% if emails %}
-        <div class="mb-6 flex justify-between items-center">
-            <p class="text-gray-700">
-                <span class="font-semibold">{{ emails|length }}</span> emails generated
-            </p>
-            <a
-                href="/download"
-                class="bg-green-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-green-700 transition"
-            >
-                Download CSV
-            </a>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .header-content h1 {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .header-content p {
+            font-size: 19px;
+            color: #86868b;
+        }
+
+        .back-btn {
+            padding: 12px 24px;
+            background: white;
+            color: #1d1d1f;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: #f5f5f7;
+            transform: translateX(-4px);
+        }
+
+        .summary-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+
+        .summary-text {
+            font-size: 17px;
+            color: #1d1d1f;
+        }
+
+        .summary-text strong {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .download-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 239, 125, 0.5);
+        }
+
+        .email-list {
+            display: grid;
+            gap: 24px;
+        }
+
+        .email-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease both;
+            border-left: 4px solid transparent;
+        }
+
+        .email-card:nth-child(1) { animation-delay: 0.2s; }
+        .email-card:nth-child(2) { animation-delay: 0.25s; }
+        .email-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .email-card.flagged {
+            border-left-color: #f59e0b;
+            background: linear-gradient(to right, #fffbeb 0%, white 20%);
+        }
+
+        .email-card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .email-info h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+
+        .email-recipient {
+            font-size: 15px;
+            color: #86868b;
+        }
+
+        .badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .flag-notice {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .flag-notice-icon {
+            font-size: 20px;
+        }
+
+        .flag-notice-text {
+            font-size: 14px;
+            color: #92400e;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: #f5f5f7;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            font-family: 'SF Mono', Monaco, monospace;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e5ea;
+        }
+
+        .metadata-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metadata-label {
+            font-size: 12px;
+            color: #86868b;
+            margin-bottom: 4px;
+        }
+
+        .metadata-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .save-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            margin-top: 16px;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .save-btn:active {
+            transform: translateY(0);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-state h2 {
+            font-size: 28px;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 17px;
+            color: #86868b;
+            margin-bottom: 32px;
+        }
+
+        .empty-state-btn {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .empty-state-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .final-download {
+            position: sticky;
+            bottom: 20px;
+            margin-top: 40px;
+            text-align: center;
+            animation: fadeInUp 0.6s ease 0.4s both;
+        }
+
+        .final-download-btn {
+            padding: 20px 48px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 19px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(56, 239, 125, 0.4);
+        }
+
+        .final-download-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(56, 239, 125, 0.6);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .header-content h1 {
+                font-size: 32px;
+            }
+
+            .summary-bar {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .metadata {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>Review Emails</h1>
+                <p>Review and edit generated emails before exporting</p>
+            </div>
+            <a href="/" class="back-btn">← Back to Home</a>
         </div>
 
-        <div class="space-y-6">
+        {% if emails %}
+        <div class="summary-bar">
+            <p class="summary-text">
+                <strong>{{ emails|length }}</strong> emails generated
+            </p>
+            <a href="/download" class="download-btn">Download CSV</a>
+        </div>
+
+        <div class="email-list">
             {% for email in emails %}
-            <div class="bg-white rounded-lg shadow-md p-6 {% if email['Flags'] %}border-l-4 border-yellow-500{% endif %}">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-900">{{ email['School Name'] }}</h3>
-                        <p class="text-sm text-gray-600">
+            <div class="email-card {% if email['Flags'] %}flagged{% endif %}">
+                <div class="email-header">
+                    <div class="email-info">
+                        <h3>{{ email['School Name'] }}</h3>
+                        <p class="email-recipient">
                             To: {{ email['Recipient Name'] }}
                             {% if email['Contact Title'] %}
                                 ({{ email['Contact Title'] }})
@@ -48,90 +423,79 @@
                             &lt;{{ email['Recipient Email'] }}&gt;
                         </p>
                     </div>
-                    <div class="flex items-center space-x-3">
+                    <div class="badges">
                         {% if email['Flags'] %}
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
-                            NEEDS REVIEW
-                        </span>
+                        <span class="badge badge-warning">Needs Review</span>
                         {% endif %}
-                        <span class="px-3 py-1 {% if email['Confidence Score'] >= 80 %}bg-green-100 text-green-800{% elif email['Confidence Score'] >= 60 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %} text-xs font-semibold rounded-full">
-                            {{ email['Confidence Score'] }}% confidence
-                        </span>
+                        {% if email['Confidence Score'] >= 80 %}
+                        <span class="badge badge-success">{{ email['Confidence Score'] }}%</span>
+                        {% elif email['Confidence Score'] >= 60 %}
+                        <span class="badge badge-info">{{ email['Confidence Score'] }}%</span>
+                        {% else %}
+                        <span class="badge badge-danger">{{ email['Confidence Score'] }}%</span>
+                        {% endif %}
                     </div>
                 </div>
 
                 {% if email['Flags'] %}
-                <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                    <p class="text-sm text-yellow-800">
-                        <strong>Flags:</strong> {{ email['Flags'] }}
-                    </p>
+                <div class="flag-notice">
+                    <span class="flag-notice-icon">⚠️</span>
+                    <span class="flag-notice-text">{{ email['Flags'] }}</span>
                 </div>
                 {% endif %}
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Subject Line</label>
+                <div class="form-group">
+                    <label>Subject Line</label>
                     <input
                         type="text"
                         value="{{ email['Subject'] }}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                         data-index="{{ loop.index0 }}"
                         data-field="Subject"
                     />
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+                <div class="form-group">
+                    <label>Email Body</label>
                     <textarea
-                        rows="12"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                        rows="14"
                         data-index="{{ loop.index0 }}"
                         data-field="Body"
                     >{{ email['Body'] }}</textarea>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                        <span class="text-gray-600">Contact Confidence:</span>
-                        <span class="font-semibold">{{ email['Contact Confidence'] }}%</span>
+                <div class="metadata">
+                    <div class="metadata-item">
+                        <span class="metadata-label">Contact Confidence</span>
+                        <span class="metadata-value">{{ email['Contact Confidence'] }}%</span>
                     </div>
-                    <div>
-                        <span class="text-gray-600">Email Quality:</span>
-                        <span class="font-semibold">{{ email['Email Quality'] }}%</span>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Email Quality</span>
+                        <span class="metadata-value">{{ email['Email Quality'] }}%</span>
                     </div>
-                    <div>
-                        <span class="text-gray-600">Generation Attempts:</span>
-                        <span class="font-semibold">{{ email['Attempts'] }}</span>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Attempts</span>
+                        <span class="metadata-value">{{ email['Attempts'] }}</span>
                     </div>
                 </div>
 
-                <button
-                    class="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                    onclick="updateEmail({{ loop.index0 }})"
-                >
+                <button class="save-btn" onclick="updateEmail({{ loop.index0 }})">
                     Save Changes
                 </button>
             </div>
             {% endfor %}
         </div>
 
-        <div class="mt-8 flex justify-center">
-            <a
-                href="/download"
-                class="bg-green-600 text-white py-3 px-8 rounded-lg font-medium hover:bg-green-700 transition text-lg"
-            >
+        <div class="final-download">
+            <a href="/download" class="final-download-btn">
                 Download All Emails as CSV
             </a>
         </div>
 
         {% else %}
-        <div class="bg-white rounded-lg shadow-md p-12 text-center">
-            <p class="text-gray-600 text-lg mb-4">No emails generated yet</p>
-            <a
-                href="/"
-                class="bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition inline-block"
-            >
-                Generate Emails
-            </a>
+        <div class="empty-state">
+            <h2>No emails yet</h2>
+            <p>Generate emails first to see them here</p>
+            <a href="/" class="empty-state-btn">Generate Emails</a>
         </div>
         {% endif %}
     </div>
@@ -159,7 +523,15 @@
                 });
 
                 if (response.ok) {
-                    alert('Email updated successfully!');
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '✓ Saved';
+                    btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '';
+                    }, 2000);
                 } else {
                     const result = await response.json();
                     alert('Error: ' + result.error);
@@ -176,15 +548,13 @@
             element.addEventListener('input', (e) => {
                 const index = e.target.dataset.index;
 
-                // Clear existing timeout
                 if (saveTimeouts[index]) {
                     clearTimeout(saveTimeouts[index]);
                 }
 
-                // Set new timeout for auto-save
                 saveTimeouts[index] = setTimeout(() => {
                     updateEmail(parseInt(index));
-                }, 2000); // Save after 2 seconds of inactivity
+                }, 3000);
             });
         });
     </script>

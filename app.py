@@ -168,4 +168,4 @@ if __name__ == '__main__':
     print("🚀 Starting Theo Email Generator")
     print(f"📊 Config: {config.MODEL}")
     print(f"🔑 API Keys configured: Anthropic={bool(config.ANTHROPIC_API_KEY)}, Brave={bool(config.BRAVE_API_KEY)}")
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001, host='127.0.0.1')
