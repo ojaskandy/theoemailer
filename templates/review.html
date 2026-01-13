@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Emails - Theo</title>
+    <title>Review - Theo</title>
     <style>
         * {
             margin: 0;
@@ -12,14 +12,16 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f7;
-            min-height: 100vh;
-            padding: 40px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #ffffff;
+            color: #1d1d1f;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 40px 24px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -27,207 +29,135 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
-            animation: fadeInUp 0.6s ease;
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #d2d2d7;
         }
 
-        .header-content h1 {
-            font-size: 48px;
-            font-weight: 700;
-            color: #1d1d1f;
-            margin-bottom: 8px;
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
             letter-spacing: -1px;
         }
 
-        .header-content p {
-            font-size: 19px;
-            color: #86868b;
-        }
-
-        .back-btn {
-            padding: 12px 24px;
-            background: white;
-            color: #1d1d1f;
-            border: 1px solid #d2d2d7;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 500;
+        .back-link {
+            color: #0071e3;
             text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-block;
+            font-size: 15px;
         }
 
-        .back-btn:hover {
-            background: #f5f5f7;
-            transform: translateX(-4px);
+        .back-link:hover {
+            text-decoration: underline;
         }
 
-        .summary-bar {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        .summary {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            animation: fadeInUp 0.6s ease 0.1s both;
-        }
-
-        .summary-text {
-            font-size: 17px;
-            color: #1d1d1f;
-        }
-
-        .summary-text strong {
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        .download-btn {
-            padding: 12px 28px;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
+            padding: 16px 0;
+            margin-bottom: 32px;
             font-size: 15px;
-            font-weight: 600;
+            color: #86868b;
+        }
+
+        .download-link {
+            color: #0071e3;
             text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);
+            font-size: 15px;
         }
 
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(56, 239, 125, 0.5);
-        }
-
-        .email-list {
-            display: grid;
-            gap: 24px;
+        .download-link:hover {
+            text-decoration: underline;
         }
 
         .email-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.6s ease both;
-            border-left: 4px solid transparent;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
         }
-
-        .email-card:nth-child(1) { animation-delay: 0.2s; }
-        .email-card:nth-child(2) { animation-delay: 0.25s; }
-        .email-card:nth-child(3) { animation-delay: 0.3s; }
 
         .email-card.flagged {
-            border-left-color: #f59e0b;
-            background: linear-gradient(to right, #fffbeb 0%, white 20%);
+            border-color: #f5a524;
+            background: #fffbf0;
         }
 
-        .email-card:hover {
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .email-header {
+        .email-meta {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 20px;
         }
 
-        .email-info h3 {
-            font-size: 24px;
+        .email-meta h3 {
+            font-size: 19px;
             font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
-        .email-recipient {
-            font-size: 15px;
+        .email-meta p {
+            font-size: 14px;
             color: #86868b;
         }
 
         .badges {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
         .badge {
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 4px 8px;
             font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-warning {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .badge-success {
-            background: #d1fae5;
-            color: #047857;
-        }
-
-        .badge-info {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-danger {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .flag-notice {
-            background: #fffbeb;
-            border: 1px solid #fef3c7;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .flag-notice-icon {
-            font-size: 20px;
-        }
-
-        .flag-notice-text {
-            font-size: 14px;
-            color: #92400e;
+            border-radius: 4px;
             font-weight: 500;
         }
 
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .flag-notice {
+            background: #fffbf0;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #856404;
+        }
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            color: #1d1d1f;
             margin-bottom: 8px;
+            color: #1d1d1f;
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
-            padding: 14px 16px;
-            background: #f5f5f7;
-            border: 2px solid transparent;
-            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
             font-size: 15px;
-            transition: all 0.3s ease;
             font-family: inherit;
+            background: #ffffff;
+            transition: border-color 0.2s;
         }
 
         .form-group textarea {
@@ -239,150 +169,114 @@
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
-            background: white;
+            border-color: #0071e3;
         }
 
         .metadata {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 16px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e5ea;
+            padding-top: 16px;
+            margin-top: 16px;
+            border-top: 1px solid #d2d2d7;
         }
 
         .metadata-item {
-            display: flex;
-            flex-direction: column;
+            font-size: 13px;
         }
 
         .metadata-label {
-            font-size: 12px;
             color: #86868b;
             margin-bottom: 4px;
         }
 
         .metadata-value {
-            font-size: 16px;
             font-weight: 600;
-            color: #1d1d1f;
         }
 
         .save-btn {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 20px;
+            background: #0071e3;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            margin-top: 16px;
+            margin-top: 12px;
+            transition: background 0.2s;
         }
 
         .save-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .save-btn:active {
-            transform: translateY(0);
+            background: #0077ed;
         }
 
         .empty-state {
             text-align: center;
             padding: 80px 20px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .empty-state h2 {
             font-size: 28px;
-            color: #1d1d1f;
+            font-weight: 600;
             margin-bottom: 12px;
         }
 
         .empty-state p {
             font-size: 17px;
             color: #86868b;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
-        .empty-state-btn {
-            padding: 16px 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            text-decoration: none;
+        .empty-state a {
             display: inline-block;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            padding: 12px 24px;
+            background: #0071e3;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: background 0.2s;
         }
 
-        .empty-state-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        .empty-state a:hover {
+            background: #0077ed;
         }
 
         .final-download {
-            position: sticky;
-            bottom: 20px;
-            margin-top: 40px;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid #d2d2d7;
             text-align: center;
-            animation: fadeInUp 0.6s ease 0.4s both;
         }
 
         .final-download-btn {
-            padding: 20px 48px;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 19px;
-            font-weight: 600;
-            text-decoration: none;
             display: inline-block;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 30px rgba(56, 239, 125, 0.4);
+            padding: 16px 32px;
+            background: #1d1d1f;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 500;
+            transition: background 0.2s;
         }
 
         .final-download-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(56, 239, 125, 0.6);
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            background: #2d2d2f;
         }
 
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 20px;
-            }
-
-            .header-content h1 {
-                font-size: 32px;
-            }
-
-            .summary-bar {
-                flex-direction: column;
                 gap: 16px;
-                text-align: center;
+            }
+
+            .summary {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
             }
 
             .metadata {
@@ -394,108 +288,92 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="header-content">
-                <h1>Review Emails</h1>
-                <p>Review and edit generated emails before exporting</p>
-            </div>
-            <a href="/" class="back-btn">← Back to Home</a>
+            <h1>Review</h1>
+            <a href="/" class="back-link">← Back</a>
         </div>
 
         {% if emails %}
-        <div class="summary-bar">
-            <p class="summary-text">
-                <strong>{{ emails|length }}</strong> emails generated
-            </p>
-            <a href="/download" class="download-btn">Download CSV</a>
+        <div class="summary">
+            <span>{{ emails|length }} emails</span>
+            <a href="/download" class="download-link">Download CSV</a>
         </div>
 
-        <div class="email-list">
-            {% for email in emails %}
-            <div class="email-card {% if email['Flags'] %}flagged{% endif %}">
-                <div class="email-header">
-                    <div class="email-info">
-                        <h3>{{ email['School Name'] }}</h3>
-                        <p class="email-recipient">
-                            To: {{ email['Recipient Name'] }}
-                            {% if email['Contact Title'] %}
-                                ({{ email['Contact Title'] }})
-                            {% endif %}
-                            &lt;{{ email['Recipient Email'] }}&gt;
-                        </p>
-                    </div>
-                    <div class="badges">
-                        {% if email['Flags'] %}
-                        <span class="badge badge-warning">Needs Review</span>
-                        {% endif %}
-                        {% if email['Confidence Score'] >= 80 %}
-                        <span class="badge badge-success">{{ email['Confidence Score'] }}%</span>
-                        {% elif email['Confidence Score'] >= 60 %}
-                        <span class="badge badge-info">{{ email['Confidence Score'] }}%</span>
-                        {% else %}
-                        <span class="badge badge-danger">{{ email['Confidence Score'] }}%</span>
-                        {% endif %}
-                    </div>
+        {% for email in emails %}
+        <div class="email-card {% if email['Flags'] %}flagged{% endif %}">
+            <div class="email-meta">
+                <div>
+                    <h3>{{ email['School Name'] }}</h3>
+                    <p>{{ email['Recipient Name'] }}{% if email['Contact Title'] %} · {{ email['Contact Title'] }}{% endif %} · {{ email['Recipient Email'] }}</p>
                 </div>
-
-                {% if email['Flags'] %}
-                <div class="flag-notice">
-                    <span class="flag-notice-icon">⚠️</span>
-                    <span class="flag-notice-text">{{ email['Flags'] }}</span>
+                <div class="badges">
+                    {% if email['Flags'] %}
+                    <span class="badge badge-warning">Review</span>
+                    {% endif %}
+                    {% if email['Confidence Score'] >= 80 %}
+                    <span class="badge badge-success">{{ email['Confidence Score'] }}%</span>
+                    {% elif email['Confidence Score'] >= 60 %}
+                    <span class="badge badge-info">{{ email['Confidence Score'] }}%</span>
+                    {% else %}
+                    <span class="badge badge-warning">{{ email['Confidence Score'] }}%</span>
+                    {% endif %}
                 </div>
-                {% endif %}
-
-                <div class="form-group">
-                    <label>Subject Line</label>
-                    <input
-                        type="text"
-                        value="{{ email['Subject'] }}"
-                        data-index="{{ loop.index0 }}"
-                        data-field="Subject"
-                    />
-                </div>
-
-                <div class="form-group">
-                    <label>Email Body</label>
-                    <textarea
-                        rows="14"
-                        data-index="{{ loop.index0 }}"
-                        data-field="Body"
-                    >{{ email['Body'] }}</textarea>
-                </div>
-
-                <div class="metadata">
-                    <div class="metadata-item">
-                        <span class="metadata-label">Contact Confidence</span>
-                        <span class="metadata-value">{{ email['Contact Confidence'] }}%</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Email Quality</span>
-                        <span class="metadata-value">{{ email['Email Quality'] }}%</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Attempts</span>
-                        <span class="metadata-value">{{ email['Attempts'] }}</span>
-                    </div>
-                </div>
-
-                <button class="save-btn" onclick="updateEmail({{ loop.index0 }})">
-                    Save Changes
-                </button>
             </div>
-            {% endfor %}
+
+            {% if email['Flags'] %}
+            <div class="flag-notice">
+                {{ email['Flags'] }}
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label>Subject</label>
+                <input
+                    type="text"
+                    value="{{ email['Subject'] }}"
+                    data-index="{{ loop.index0 }}"
+                    data-field="Subject"
+                />
+            </div>
+
+            <div class="form-group">
+                <label>Body</label>
+                <textarea
+                    rows="12"
+                    data-index="{{ loop.index0 }}"
+                    data-field="Body"
+                >{{ email['Body'] }}</textarea>
+            </div>
+
+            <div class="metadata">
+                <div class="metadata-item">
+                    <div class="metadata-label">Contact</div>
+                    <div class="metadata-value">{{ email['Contact Confidence'] }}%</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Quality</div>
+                    <div class="metadata-value">{{ email['Email Quality'] }}%</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Attempts</div>
+                    <div class="metadata-value">{{ email['Attempts'] }}</div>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="updateEmail({{ loop.index0 }})">
+                Save
+            </button>
         </div>
+        {% endfor %}
 
         <div class="final-download">
-            <a href="/download" class="final-download-btn">
-                Download All Emails as CSV
-            </a>
+            <a href="/download" class="final-download-btn">Download all</a>
         </div>
 
         {% else %}
         <div class="empty-state">
             <h2>No emails yet</h2>
-            <p>Generate emails first to see them here</p>
-            <a href="/" class="empty-state-btn">Generate Emails</a>
+            <p>Generate emails to see them here</p>
+            <a href="/">Get started</a>
         </div>
         {% endif %}
     </div>
@@ -525,8 +403,8 @@
                 if (response.ok) {
                     const btn = event.target;
                     const originalText = btn.textContent;
-                    btn.textContent = '✓ Saved';
-                    btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+                    btn.textContent = 'Saved';
+                    btn.style.background = '#34c759';
 
                     setTimeout(() => {
                         btn.textContent = originalText;
@@ -541,7 +419,6 @@
             }
         }
 
-        // Auto-save on input (debounced)
         let saveTimeouts = {};
 
         document.querySelectorAll('input[data-index], textarea[data-index]').forEach(element => {
