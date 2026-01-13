@@ -82,14 +82,14 @@ Only include contacts where you found both a real name and a valid email address
                 tools=[{
                     "type": "web_search_20250305",
                     "name": "web_search",
-                    "max_uses": 5
+                    "max_uses": 3  # Reduced from 5 for speed
                 }]
             )
 
-            # Extract text from response
+            # Extract text from response (some blocks have text=None, must check)
             response_text = ""
             for content_block in response.content:
-                if hasattr(content_block, 'text'):
+                if hasattr(content_block, 'text') and content_block.text:
                     response_text += content_block.text
 
             # Log search usage

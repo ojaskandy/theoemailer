@@ -317,7 +317,8 @@
 
             <div class="progress" id="progress">
                 <div class="spinner"></div>
-                <p class="progress-text">Generating...</p>
+                <p class="progress-text" id="progressText">Generating...</p>
+                <p class="progress-detail" id="progressDetail" style="font-size: 12px; color: #6e7681; margin-top: 8px;"></p>
             </div>
         </div>
 
@@ -388,34 +389,85 @@
             }
         });
 
-        generateBtn.addEventListener('click', async () => {
+        generateBtn.addEventListener('click', () => {
             generateBtn.disabled = true;
             progress.classList.add('show');
 
-            try {
-                const response = await fetch('/generate', {
-                    method: 'POST'
-                });
+            const progressText = document.getElementById('progressText');
+            const progressDetail = document.getElementById('progressDetail');
 
-                const result = await response.json();
+            // Use Server-Sent Events for real-time progress
+            const eventSource = new EventSource('/generate-stream');
 
-                if (response.ok) {
-                    document.getElementById('totalEmails').textContent = result.total_emails;
-                    document.getElementById('flaggedCount').textContent = result.flagged_count;
-                    document.getElementById('avgConfidence').textContent = result.avg_confidence + '%';
+            eventSource.addEventListener('progress', (e) => {
+                const data = JSON.parse(e.data);
+                const { school_idx, total_schools, school_name, step, detail } = data;
 
-                    progress.classList.remove('show');
-                    resultsSection.classList.add('show');
-                } else {
-                    alert('Error: ' + result.error);
-                    generateBtn.disabled = false;
-                    progress.classList.remove('show');
+                // Update progress text based on step
+                let stepText = '';
+                switch(step) {
+                    case 'searching':
+                        stepText = `🔍 Searching for contacts...`;
+                        break;
+                    case 'found_contacts':
+                        stepText = `✓ ${detail}`;
+                        break;
+                    case 'generating':
+                        stepText = `✍️ ${detail}`;
+                        break;
+                    case 'complete':
+                        stepText = `✓ ${detail}`;
+                        break;
+                    case 'warning':
+                        stepText = `⚠️ ${detail}`;
+                        break;
+                    case 'error':
+                        stepText = `❌ ${detail}`;
+                        break;
+                    default:
+                        stepText = detail || step;
                 }
-            } catch (error) {
-                alert('Generation failed: ' + error.message);
+
+                progressText.textContent = `School ${school_idx}/${total_schools}: ${school_name}`;
+                progressDetail.textContent = stepText;
+            });
+
+            eventSource.addEventListener('complete', (e) => {
+                const data = JSON.parse(e.data);
+                eventSource.close();
+
+                document.getElementById('totalEmails').textContent = data.total_emails;
+                document.getElementById('flaggedCount').textContent = data.flagged_count;
+                document.getElementById('avgConfidence').textContent = data.avg_confidence + '%';
+
+                progress.classList.remove('show');
+                resultsSection.classList.add('show');
+            });
+
+            eventSource.addEventListener('error', (e) => {
+                eventSource.close();
+
+                if (e.data) {
+                    const data = JSON.parse(e.data);
+                    alert('Error: ' + data.message);
+                } else {
+                    alert('Connection error. Please try again.');
+                }
+
                 generateBtn.disabled = false;
                 progress.classList.remove('show');
-            }
+            });
+
+            eventSource.onerror = () => {
+                // Connection closed unexpectedly
+                if (eventSource.readyState === EventSource.CLOSED) {
+                    return; // Normal close, handled by 'complete' event
+                }
+                eventSource.close();
+                alert('Connection lost. Please try again.');
+                generateBtn.disabled = false;
+                progress.classList.remove('show');
+            };
         });
     </script>
 </body>

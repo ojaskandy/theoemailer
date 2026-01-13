@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, jsonify, send_file, make_response
+from flask import Flask, render_template, request, jsonify, send_file, make_response, Response
 import pandas as pd
 import os
 import json
 from datetime import datetime
 import uuid
+import queue
+import threading
 import config
 from agent.email_generator import EmailGenerator
 
@@ -148,6 +150,107 @@ def generate():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+# Global progress queues for SSE
+progress_queues = {}
+
+
+@app.route('/generate-stream')
+def generate_stream():
+    """Generate emails with Server-Sent Events for real-time progress."""
+    session_id = request.cookies.get('session_id')
+    if not session_id:
+        return jsonify({'error': 'No session'}), 400
+
+    session_data = get_session_data(session_id)
+    schools = session_data.get('schools')
+    template = session_data.get('template')
+
+    if not schools or not template:
+        return jsonify({'error': 'Please upload CSV and template first'}), 400
+
+    # Create a queue for this session
+    progress_queue = queue.Queue()
+    progress_queues[session_id] = progress_queue
+
+    def generate():
+        try:
+            # Initialize generator
+            generator = EmailGenerator(
+                config.ANTHROPIC_API_KEY,
+                config.BRAVE_API_KEY
+            )
+
+            # Progress callback that sends SSE events
+            def progress_callback(school_idx, total_schools, school_name, step, detail=""):
+                event_data = {
+                    'school_idx': school_idx,
+                    'total_schools': total_schools,
+                    'school_name': school_name,
+                    'step': step,
+                    'detail': detail
+                }
+                progress_queue.put(('progress', event_data))
+
+            # Generate emails with progress callback
+            results = generator.generate_emails_for_schools(
+                schools, template, progress_callback
+            )
+
+            # Format for export
+            export_data = generator.format_results_for_export(results)
+
+            # Store results
+            session_data['results'] = results
+            session_data['export_data'] = export_data
+            save_session_data(session_id, session_data)
+
+            # Calculate stats
+            total_emails = len(export_data)
+            flagged_count = sum(1 for row in export_data if row['Flags'])
+            avg_confidence = sum(row['Confidence Score'] for row in export_data) / total_emails if total_emails > 0 else 0
+
+            # Send completion event
+            progress_queue.put(('complete', {
+                'total_emails': total_emails,
+                'flagged_count': flagged_count,
+                'avg_confidence': int(avg_confidence)
+            }))
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            progress_queue.put(('error', {'message': str(e)}))
+
+        finally:
+            # Clean up
+            if session_id in progress_queues:
+                del progress_queues[session_id]
+
+    # Start generation in background thread
+    thread = threading.Thread(target=generate)
+    thread.start()
+
+    def event_stream():
+        while True:
+            try:
+                event_type, data = progress_queue.get(timeout=120)
+                yield f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
+                if event_type in ('complete', 'error'):
+                    break
+            except queue.Empty:
+                # Send keepalive
+                yield f": keepalive\n\n"
+
+    return Response(
+        event_stream(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        }
+    )
 
 
 @app.route('/update_email', methods=['POST'])
