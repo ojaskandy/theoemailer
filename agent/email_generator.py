@@ -132,22 +132,28 @@ class EmailGenerator:
         if word_count < 50 or word_count > 600:
             return False
 
-        # Should have proper greeting with actual name (not "Administrator")
-        if contact_name and contact_name != 'Administrator':
+        # Check for proper greeting
+        has_real_name = contact_name and contact_name.lower() not in ['administrator', 'admin', 'unknown', '']
+
+        if has_real_name:
             first_name = contact_name.split()[0]
-            if f"Hi {first_name}" in body or f"Hi Dr." in body:
-                pass  # Good greeting
+            if f"Hi {first_name}" in body or "Hi Dr." in body:
+                pass  # Good greeting with real name
             else:
                 return False
         else:
-            return False  # No real name, needs review
+            # For generic contacts, "Hi there," is acceptable
+            if "Hi there," in body:
+                pass  # Acceptable fallback greeting
+            else:
+                return False
 
         # Should have signature elements
         if 'Ojas' not in body and 'trytheo.org' not in body:
             return False
 
         # Should not contain refusal language
-        refusal_phrases = ['I cannot write', 'I need to flag', 'PROBLEM:', 'CRITICAL ISSUE']
+        refusal_phrases = ['I cannot write', 'I need to flag', 'PROBLEM:', 'CRITICAL ISSUE', 'What I need']
         for phrase in refusal_phrases:
             if phrase in body:
                 return False

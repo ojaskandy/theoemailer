@@ -46,19 +46,22 @@ class ContactResearcher:
 
         prompt = f"""Find contact information for administrators at "{school_name}".
 
-I need 2-3 key decision-makers such as:
-- Principal
-- Dean
-- Superintendent
-- Head of School
-- Director
+I need 2-3 key decision-makers. Search for these specific roles:
+- Head of School / Principal / Headmaster
+- Dean of Academics / Academic Dean
+- Director of Curriculum / Director of Technology
+- Assistant Head / Associate Head
+- Division Head (Upper School, Middle School, etc.)
 
-For each person, find:
-1. Full name (First Last)
-2. Email address
-3. Job title
+IMPORTANT SEARCH STRATEGY:
+1. First search for "{school_name} leadership team" or "{school_name} administration"
+2. Then search for "{school_name} staff directory"
+3. Look for the school's official website faculty/staff pages
 
-Search for this information on the school's official website and staff directories.
+For each person you find, provide:
+1. Full name (First Last) - REQUIRED
+2. Email address - if you can find it or construct it from the school's email pattern (e.g., first initial + last name @school.org)
+3. Job title - REQUIRED
 
 Return your findings as JSON:
 {{
@@ -66,12 +69,16 @@ Return your findings as JSON:
     {{
       "name": "John Smith",
       "email": "jsmith@school.edu",
-      "title": "Principal"
+      "title": "Head of School"
     }}
   ]
 }}
 
-Only include contacts where you found both a real name and a valid email address. Do not make up or guess information."""
+CRITICAL RULES:
+- You MUST find at least 2 real people with real names
+- If you can't find an email, guess based on the school's domain and common patterns (firstlast@, first.last@, flast@)
+- School names are always findable on staff directories - keep searching until you find real names
+- Do NOT return empty results - school leadership is always public information"""
 
         try:
             response = self.anthropic_client.messages.create(

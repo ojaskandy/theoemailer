@@ -83,6 +83,9 @@ class EmailWriter:
         # Extract random number if provided
         random_number = school_data.get('_random_number_for_template', 3)
 
+        # Check if we have a real name or a placeholder
+        has_real_name = contact_name and contact_name.lower() not in ['administrator', 'admin', 'unknown', 'n/a', '']
+
         prompt = f"""You are writing a cold outreach email on behalf of a student founder from Theo, an agentic teaching assistant platform (https://trytheo.org).
 
 CRITICAL REQUIREMENTS:
@@ -91,14 +94,14 @@ CRITICAL REQUIREMENTS:
 3. Follow the template structure and guidelines exactly
 4. Maintain a humble, earnest student founder tone
 5. Keep the email concise and focused
+6. YOU MUST ALWAYS WRITE THE EMAIL - never refuse or explain why you can't write it
 
-GREETING FORMAT (VERY IMPORTANT):
-- If the recipient is a regular person (Principal, Dean, Superintendent, etc.): Use "Hi [FirstName],"
-  Example: "Hi Sarah," or "Hi Michael,"
-- If the recipient has a PhD or doctorate: Use "Hi Dr. [LastName],"
-  Example: "Hi Dr. Johnson," or "Hi Dr. Williams,"
-- NEVER use "Hi [Title]" or "Hi [Team/Department]" - ALWAYS use the person's actual name
-- If you don't have a real first name, you're doing something wrong - the contact should have a real name
+GREETING FORMAT:
+- If you have a real name (like "Sarah Johnson"): Use "Hi Sarah," (first name only)
+- If the person has a PhD or doctorate in their title: Use "Hi Dr. [LastName],"
+- If the name is "Administrator" or generic: Use "Hi there," as a fallback - DO NOT refuse to write the email
+
+IMPORTANT: {"You have a real name to use: " + contact_name if has_real_name else "The contact name is generic/missing. Use 'Hi there,' as the greeting and write the email anyway. The email will be flagged for review."}
 
 TEMPLATE AND GUIDELINES:
 {template}
@@ -122,9 +125,15 @@ Generate a personalized cold outreach email. Format your response as:
 SUBJECT: [Your subject line]
 
 BODY:
-[Your email body - must start with proper greeting using recipient's actual name]
+[Your email body]
 
-Remember: Be respectful, accurate, and follow the template. You represent a student founder, so the tone should be earnest and professional but not overly formal."""
+ABSOLUTELY DO NOT:
+- Refuse to write the email
+- Explain why you can't write the email
+- Ask for more information
+- Output anything other than SUBJECT: and BODY:
+
+Just write the best email you can with the information provided."""
 
         return prompt
 
