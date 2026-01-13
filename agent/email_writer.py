@@ -156,6 +156,8 @@ Remember: Be respectful, accurate, and follow the template. You represent a stud
         Returns:
             Dict with issues found and suggestions
         """
+        school_info = "\n".join([f"- {k}: {v}" for k, v in school_data.items()])
+
         critique_prompt = f"""Review this cold outreach email for quality issues. Check for:
 
 1. Tone issues (disrespectful, too blunt, overly casual)
@@ -164,7 +166,7 @@ Remember: Be respectful, accurate, and follow the template. You represent a stud
 4. Clarity and conciseness
 
 SCHOOL DATA:
-{"\n".join([f"- {k}: {v}" for k, v in school_data.items()])}
+{school_info}
 
 EMAIL SUBJECT: {email['subject']}
 
