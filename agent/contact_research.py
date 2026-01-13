@@ -36,7 +36,12 @@ class ContactResearcher:
             if validated:
                 validated_contacts.append(validated)
 
-        return validated_contacts
+        # If we don't have enough contacts, add generic ones as fallback
+        if len(validated_contacts) < 2:
+            print(f"  Warning: Only found {len(validated_contacts)} contacts for {school_name}, adding generic contacts")
+            validated_contacts.extend(self._generate_generic_contacts(school_name, len(validated_contacts)))
+
+        return validated_contacts[:config.MAX_CONTACTS_PER_SCHOOL]
 
     def _search_for_contacts(self, school_name: str) -> List[Dict]:
         """Search for school contacts using Brave Search API."""
@@ -176,3 +181,30 @@ class ContactResearcher:
         contact['flagged'] = confidence < config.MIN_CONTACT_CONFIDENCE
 
         return contact
+
+    def _generate_generic_contacts(self, school_name: str, existing_count: int) -> List[Dict]:
+        """
+        Generate generic contact placeholders when real contacts can't be found.
+
+        Returns contacts with common titles and generic emails marked with low confidence.
+        """
+        generic_contacts = []
+        titles = ['Principal', 'Dean', 'Superintendent', 'Director']
+
+        # Generate domain from school name
+        school_slug = school_name.lower().replace(' ', '').replace('-', '')
+        generic_domain = f"{school_slug[:20]}.edu"
+
+        for i in range(existing_count, min(existing_count + 2, config.MAX_CONTACTS_PER_SCHOOL)):
+            title = titles[i] if i < len(titles) else 'Administrator'
+            generic_contacts.append({
+                'email': f"{title.lower()}@{generic_domain}",
+                'name': None,
+                'title': title,
+                'source_url': '',
+                'school_name': school_name,
+                'confidence': 40,  # Low confidence for generic contacts
+                'flagged': True  # Always flag generic contacts
+            })
+
+        return generic_contacts

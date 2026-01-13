@@ -14,8 +14,10 @@ ENV/
 # Data files
 data/uploads/*
 data/outputs/*
+data/sessions/*
 !data/uploads/.gitkeep
 !data/outputs/.gitkeep
+!data/sessions/.gitkeep
 
 # IDE
 .vscode/

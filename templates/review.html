@@ -13,8 +13,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-            background: #ffffff;
-            color: #1d1d1f;
+            background: #0a0e27;
+            color: #ffffff;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             padding: 40px 24px;
@@ -31,7 +31,7 @@
             align-items: center;
             margin-bottom: 48px;
             padding-bottom: 24px;
-            border-bottom: 1px solid #d2d2d7;
+            border-bottom: 1px solid #2a3150;
         }
 
         .header h1 {
@@ -41,7 +41,7 @@
         }
 
         .back-link {
-            color: #0071e3;
+            color: #667eea;
             text-decoration: none;
             font-size: 15px;
         }
@@ -57,11 +57,11 @@
             padding: 16px 0;
             margin-bottom: 32px;
             font-size: 15px;
-            color: #86868b;
+            color: #a8b3cf;
         }
 
         .download-link {
-            color: #0071e3;
+            color: #667eea;
             text-decoration: none;
             font-size: 15px;
         }
@@ -71,15 +71,16 @@
         }
 
         .email-card {
-            border: 1px solid #d2d2d7;
+            border: 1px solid #2a3150;
             border-radius: 8px;
             padding: 24px;
             margin-bottom: 16px;
+            background: #151932;
         }
 
         .email-card.flagged {
-            border-color: #f5a524;
-            background: #fffbf0;
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
         }
 
         .email-meta {
@@ -97,7 +98,7 @@
 
         .email-meta p {
             font-size: 14px;
-            color: #86868b;
+            color: #a8b3cf;
         }
 
         .badges {
@@ -145,18 +146,19 @@
             font-size: 13px;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #1d1d1f;
+            color: #a8b3cf;
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #d2d2d7;
+            border: 1px solid #2a3150;
             border-radius: 8px;
             font-size: 15px;
             font-family: inherit;
-            background: #ffffff;
+            background: #0a0e27;
+            color: #ffffff;
             transition: border-color 0.2s;
         }
 
@@ -169,7 +171,7 @@
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #0071e3;
+            border-color: #667eea;
         }
 
         .metadata {
@@ -178,7 +180,7 @@
             gap: 16px;
             padding-top: 16px;
             margin-top: 16px;
-            border-top: 1px solid #d2d2d7;
+            border-top: 1px solid #2a3150;
         }
 
         .metadata-item {
@@ -186,7 +188,7 @@
         }
 
         .metadata-label {
-            color: #86868b;
+            color: #a8b3cf;
             margin-bottom: 4px;
         }
 
@@ -196,7 +198,7 @@
 
         .save-btn {
             padding: 10px 20px;
-            background: #0071e3;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -204,11 +206,12 @@
             font-weight: 500;
             cursor: pointer;
             margin-top: 12px;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
 
         .save-btn:hover {
-            background: #0077ed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .empty-state {

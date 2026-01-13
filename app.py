@@ -1,17 +1,42 @@
-from flask import Flask, render_template, request, jsonify, send_file, session
+from flask import Flask, render_template, request, jsonify, send_file, make_response
 import pandas as pd
 import os
 import json
 from datetime import datetime
+import uuid
 import config
 from agent.email_generator import EmailGenerator
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
 
 # Ensure directories exist
 os.makedirs(config.UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(config.OUTPUT_FOLDER, exist_ok=True)
+os.makedirs('data/sessions', exist_ok=True)
+
+
+def get_session_id():
+    """Get or create session ID from cookie."""
+    session_id = request.cookies.get('session_id')
+    if not session_id:
+        session_id = str(uuid.uuid4())
+    return session_id
+
+
+def get_session_data(session_id):
+    """Load session data from file."""
+    session_file = f'data/sessions/{session_id}.json'
+    if os.path.exists(session_file):
+        with open(session_file, 'r') as f:
+            return json.load(f)
+    return {}
+
+
+def save_session_data(session_id, data):
+    """Save session data to file."""
+    session_file = f'data/sessions/{session_id}.json'
+    with open(session_file, 'w') as f:
+        json.dump(data, f)
 
 
 @app.route('/')
@@ -24,6 +49,8 @@ def index():
 def upload():
     """Handle CSV and template upload."""
     try:
+        session_id = get_session_id()
+
         # Get CSV file
         if 'csv_file' not in request.files:
             return jsonify({'error': 'No CSV file uploaded'}), 400
@@ -38,23 +65,28 @@ def upload():
             return jsonify({'error': 'No template provided'}), 400
 
         # Save and read CSV
-        csv_path = os.path.join(config.UPLOAD_FOLDER, f'schools_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
+        csv_path = os.path.join(config.UPLOAD_FOLDER, f'schools_{session_id}.csv')
         csv_file.save(csv_path)
 
         # Parse CSV
         df = pd.read_csv(csv_path)
         schools = df.to_dict('records')
 
-        # Store in session for later use
-        session['csv_path'] = csv_path
-        session['template'] = template
-        session['schools'] = schools
+        # Store in session file
+        session_data = {
+            'csv_path': csv_path,
+            'template': template,
+            'schools': schools
+        }
+        save_session_data(session_id, session_data)
 
-        return jsonify({
+        response = make_response(jsonify({
             'success': True,
             'school_count': len(schools),
             'columns': list(df.columns)
-        })
+        }))
+        response.set_cookie('session_id', session_id, max_age=3600*24)  # 24 hours
+        return response
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -64,6 +96,9 @@ def upload():
 def generate():
     """Generate emails for all schools."""
     try:
+        session_id = get_session_id()
+        session_data = get_session_data(session_id)
+
         # Check API keys
         if not config.ANTHROPIC_API_KEY:
             return jsonify({'error': 'ANTHROPIC_API_KEY not configured'}), 500
@@ -71,8 +106,8 @@ def generate():
             return jsonify({'error': 'BRAVE_API_KEY not configured'}), 500
 
         # Get data from session
-        schools = session.get('schools')
-        template = session.get('template')
+        schools = session_data.get('schools')
+        template = session_data.get('template')
 
         if not schools or not template:
             return jsonify({'error': 'Please upload CSV and template first'}), 400
@@ -84,27 +119,29 @@ def generate():
         )
 
         # Generate emails
+        print(f"Generating emails for {len(schools)} schools...")
         results = generator.generate_emails_for_schools(schools, template)
 
         # Format for export
         export_data = generator.format_results_for_export(results)
 
         # Store results
-        session['results'] = results
-        session['export_data'] = export_data
+        session_data['results'] = results
+        session_data['export_data'] = export_data
+        save_session_data(session_id, session_data)
 
         # Calculate stats
         total_emails = len(export_data)
         flagged_count = sum(1 for row in export_data if row['Flags'])
         avg_confidence = sum(row['Confidence Score'] for row in export_data) / total_emails if total_emails > 0 else 0
 
+        print(f"Generated {total_emails} emails, {flagged_count} flagged")
+
         return jsonify({
             'success': True,
             'total_emails': total_emails,
             'flagged_count': flagged_count,
-            'avg_confidence': int(avg_confidence),
-            'results': results,
-            'export_data': export_data
+            'avg_confidence': int(avg_confidence)
         })
 
     except Exception as e:
@@ -117,14 +154,18 @@ def generate():
 def update_email():
     """Update an email after human review."""
     try:
+        session_id = get_session_id()
+        session_data = get_session_data(session_id)
+
         data = request.json
         index = data.get('index')
         updated_email = data.get('email')
 
-        export_data = session.get('export_data', [])
+        export_data = session_data.get('export_data', [])
         if 0 <= index < len(export_data):
             export_data[index].update(updated_email)
-            session['export_data'] = export_data
+            session_data['export_data'] = export_data
+            save_session_data(session_id, session_data)
             return jsonify({'success': True})
         else:
             return jsonify({'error': 'Invalid index'}), 400
@@ -137,7 +178,10 @@ def update_email():
 def download():
     """Download results as CSV."""
     try:
-        export_data = session.get('export_data')
+        session_id = get_session_id()
+        session_data = get_session_data(session_id)
+
+        export_data = session_data.get('export_data')
         if not export_data:
             return jsonify({'error': 'No data to export'}), 400
 
@@ -147,7 +191,7 @@ def download():
         # Save to CSV
         output_path = os.path.join(
             config.OUTPUT_FOLDER,
-            f'theo_emails_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+            f'theo_emails_{session_id}.csv'
         )
         df.to_csv(output_path, index=False)
 
@@ -160,7 +204,9 @@ def download():
 @app.route('/review')
 def review():
     """Review page for generated emails."""
-    export_data = session.get('export_data', [])
+    session_id = get_session_id()
+    session_data = get_session_data(session_id)
+    export_data = session_data.get('export_data', [])
     return render_template('review.html', emails=export_data)
 
 
