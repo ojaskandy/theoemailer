@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theo Email Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Theo Email Generator</h1>
+            <p class="text-gray-600">Automated cold outreach for educational institutions</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-semibold mb-4">Upload Data</h2>
+
+            <form id="uploadForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        School Data CSV
+                    </label>
+                    <input
+                        type="file"
+                        id="csvFile"
+                        accept=".csv"
+                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2"
+                        required
+                    />
+                    <p class="mt-1 text-sm text-gray-500">
+                        CSV with columns: School name, Fit, Tuition, Pain signal, Why good fit, Tactical entry
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Template & Guidelines
+                    </label>
+                    <textarea
+                        id="template"
+                        rows="12"
+                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg p-3 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Paste your email template and guidelines here..."
+                        required
+                    ></textarea>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Include structure, tone guidelines, and any specific instructions
+                    </p>
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    id="uploadBtn"
+                >
+                    Upload & Continue
+                </button>
+            </form>
+        </div>
+
+        <div id="generateSection" class="bg-white rounded-lg shadow-md p-6 hidden">
+            <h2 class="text-2xl font-semibold mb-4">Generate Emails</h2>
+
+            <div id="uploadSuccess" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p class="text-green-800">
+                    ✓ <span id="schoolCount"></span> schools loaded successfully
+                </p>
+            </div>
+
+            <button
+                id="generateBtn"
+                class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+                Generate Emails
+            </button>
+
+            <div id="progress" class="mt-4 hidden">
+                <div class="flex items-center space-x-3">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span class="text-gray-700" id="progressText">Processing...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="bg-white rounded-lg shadow-md p-6 mt-6 hidden">
+            <h2 class="text-2xl font-semibold mb-4">Results</h2>
+
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600">Total Emails</p>
+                    <p class="text-2xl font-bold text-blue-600" id="totalEmails">0</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600">Needs Review</p>
+                    <p class="text-2xl font-bold text-yellow-600" id="flaggedCount">0</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600">Avg Confidence</p>
+                    <p class="text-2xl font-bold text-green-600" id="avgConfidence">0%</p>
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <a
+                    href="/review"
+                    class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition text-center"
+                >
+                    Review Emails
+                </a>
+                <a
+                    href="/download"
+                    class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition text-center"
+                >
+                    Download CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const generateSection = document.getElementById('generateSection');
+        const generateBtn = document.getElementById('generateBtn');
+        const progress = document.getElementById('progress');
+        const progressText = document.getElementById('progressText');
+        const resultsSection = document.getElementById('resultsSection');
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('csv_file', document.getElementById('csvFile').files[0]);
+            formData.append('template', document.getElementById('template').value);
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('schoolCount').textContent = result.school_count;
+                    generateSection.classList.remove('hidden');
+                    uploadBtn.textContent = 'Upload & Continue';
+                } else {
+                    alert('Error: ' + result.error);
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = 'Upload & Continue';
+                }
+            } catch (error) {
+                alert('Upload failed: ' + error.message);
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload & Continue';
+            }
+        });
+
+        generateBtn.addEventListener('click', async () => {
+            generateBtn.disabled = true;
+            progress.classList.remove('hidden');
+            progressText.textContent = 'Generating emails... This may take several minutes.';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('totalEmails').textContent = result.total_emails;
+                    document.getElementById('flaggedCount').textContent = result.flagged_count;
+                    document.getElementById('avgConfidence').textContent = result.avg_confidence + '%';
+
+                    resultsSection.classList.remove('hidden');
+                    progress.classList.add('hidden');
+                } else {
+                    alert('Error: ' + result.error);
+                    generateBtn.disabled = false;
+                    progress.classList.add('hidden');
+                }
+            } catch (error) {
+                alert('Generation failed: ' + error.message);
+                generateBtn.disabled = false;
+                progress.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

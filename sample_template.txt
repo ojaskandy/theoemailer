@@ -1,0 +1,44 @@
+Email Template & Guidelines for Theo Outreach
+
+STRUCTURE:
+1. Brief, respectful greeting
+2. One sentence introduction of yourself as a student founder
+3. One sentence about Theo and what it does
+4. Specific pain point relevance to their school (reference their data)
+5. Brief value proposition (how Theo helps)
+6. Soft call-to-action (ask if they'd be interested in learning more)
+7. Professional closing
+
+TONE:
+- Respectful and professional (you're a student reaching out to administrators)
+- Humble and earnest, not salesy
+- Evidence-based (reference their specific challenges)
+- Concise (under 250 words)
+
+EXAMPLE STRUCTURE:
+
+Subject: Helping [School Name] with [Specific Pain Point]
+
+Dear [Name],
+
+I'm [Your Name], a student founder working on Theo, an AI teaching assistant designed specifically for educational institutions.
+
+I noticed that [School Name] [specific pain point from data]. We've been working with similar schools to help address [related challenge] through personalized, agentic AI tutoring.
+
+Theo provides 24/7 personalized support to students, helping reduce teacher workload while improving learning outcomes. Our platform adapts to each student's learning style and provides real-time insights to educators.
+
+Given [tactical entry point], I thought you might be interested in learning how Theo could support [School Name]'s goals.
+
+Would you be open to a brief conversation about how we might help?
+
+Best regards,
+[Your Name]
+Founder, Theo
+https://trytheo.org
+
+KEY RULES:
+- Never be pushy or demanding
+- Don't oversell or make unrealistic promises
+- Always reference specific data about their school
+- Keep it under 250 words
+- Maintain student founder authenticity

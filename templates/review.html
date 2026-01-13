@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Emails - Theo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">Review Generated Emails</h1>
+                <p class="text-gray-600">Review and edit emails before exporting</p>
+            </div>
+            <a
+                href="/"
+                class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition"
+            >
+                ← Back
+            </a>
+        </header>
+
+        {% if emails %}
+        <div class="mb-6 flex justify-between items-center">
+            <p class="text-gray-700">
+                <span class="font-semibold">{{ emails|length }}</span> emails generated
+            </p>
+            <a
+                href="/download"
+                class="bg-green-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-green-700 transition"
+            >
+                Download CSV
+            </a>
+        </div>
+
+        <div class="space-y-6">
+            {% for email in emails %}
+            <div class="bg-white rounded-lg shadow-md p-6 {% if email['Flags'] %}border-l-4 border-yellow-500{% endif %}">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900">{{ email['School Name'] }}</h3>
+                        <p class="text-sm text-gray-600">
+                            To: {{ email['Recipient Name'] }}
+                            {% if email['Contact Title'] %}
+                                ({{ email['Contact Title'] }})
+                            {% endif %}
+                            &lt;{{ email['Recipient Email'] }}&gt;
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        {% if email['Flags'] %}
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
+                            NEEDS REVIEW
+                        </span>
+                        {% endif %}
+                        <span class="px-3 py-1 {% if email['Confidence Score'] >= 80 %}bg-green-100 text-green-800{% elif email['Confidence Score'] >= 60 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %} text-xs font-semibold rounded-full">
+                            {{ email['Confidence Score'] }}% confidence
+                        </span>
+                    </div>
+                </div>
+
+                {% if email['Flags'] %}
+                <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <p class="text-sm text-yellow-800">
+                        <strong>Flags:</strong> {{ email['Flags'] }}
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subject Line</label>
+                    <input
+                        type="text"
+                        value="{{ email['Subject'] }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        data-index="{{ loop.index0 }}"
+                        data-field="Subject"
+                    />
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+                    <textarea
+                        rows="12"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                        data-index="{{ loop.index0 }}"
+                        data-field="Body"
+                    >{{ email['Body'] }}</textarea>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-600">Contact Confidence:</span>
+                        <span class="font-semibold">{{ email['Contact Confidence'] }}%</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Email Quality:</span>
+                        <span class="font-semibold">{{ email['Email Quality'] }}%</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Generation Attempts:</span>
+                        <span class="font-semibold">{{ email['Attempts'] }}</span>
+                    </div>
+                </div>
+
+                <button
+                    class="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                    onclick="updateEmail({{ loop.index0 }})"
+                >
+                    Save Changes
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-8 flex justify-center">
+            <a
+                href="/download"
+                class="bg-green-600 text-white py-3 px-8 rounded-lg font-medium hover:bg-green-700 transition text-lg"
+            >
+                Download All Emails as CSV
+            </a>
+        </div>
+
+        {% else %}
+        <div class="bg-white rounded-lg shadow-md p-12 text-center">
+            <p class="text-gray-600 text-lg mb-4">No emails generated yet</p>
+            <a
+                href="/"
+                class="bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition inline-block"
+            >
+                Generate Emails
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function updateEmail(index) {
+            const subjectInput = document.querySelector(`input[data-index="${index}"][data-field="Subject"]`);
+            const bodyTextarea = document.querySelector(`textarea[data-index="${index}"][data-field="Body"]`);
+
+            const updatedEmail = {
+                Subject: subjectInput.value,
+                Body: bodyTextarea.value
+            };
+
+            try {
+                const response = await fetch('/update_email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        index: index,
+                        email: updatedEmail
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Email updated successfully!');
+                } else {
+                    const result = await response.json();
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Update failed: ' + error.message);
+            }
+        }
+
+        // Auto-save on input (debounced)
+        let saveTimeouts = {};
+
+        document.querySelectorAll('input[data-index], textarea[data-index]').forEach(element => {
+            element.addEventListener('input', (e) => {
+                const index = e.target.dataset.index;
+
+                // Clear existing timeout
+                if (saveTimeouts[index]) {
+                    clearTimeout(saveTimeouts[index]);
+                }
+
+                // Set new timeout for auto-save
+                saveTimeouts[index] = setTimeout(() => {
+                    updateEmail(parseInt(index));
+                }, 2000); // Save after 2 seconds of inactivity
+            });
+        });
+    </script>
+</body>
+</html>
