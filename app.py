@@ -73,10 +73,16 @@ def upload():
         # Parse CSV
         df = pd.read_csv(csv_path)
 
+        print(f"\n{'='*60}")
+        print(f"CSV PARSING DEBUG - {len(df)} rows")
+        print(f"Columns: {list(df.columns)}")
+        print(f"{'='*60}\n")
+
         # Parse schools with embedded contacts
         schools = []
-        for _, row in df.iterrows():
+        for row_idx, row in df.iterrows():
             school_dict = row.to_dict()
+            school_name = school_dict.get('School name', f'Unknown Row {row_idx}')
 
             # Extract contacts if provided (Contact 1 Name, Contact 1 Email, etc.)
             contacts = []
@@ -87,9 +93,12 @@ def upload():
                 bio_col = f'Contact {i} Bio'
 
                 if name_col in school_dict and pd.notna(school_dict[name_col]) and school_dict[name_col]:
+                    contact_email = str(school_dict.get(email_col, '')).strip() if pd.notna(school_dict.get(email_col)) else ''
+                    contact_name = str(school_dict[name_col]).strip()
+
                     contact = {
-                        'name': str(school_dict[name_col]).strip(),
-                        'email': str(school_dict.get(email_col, '')).strip() if pd.notna(school_dict.get(email_col)) else '',
+                        'name': contact_name,
+                        'email': contact_email,
                         'title': str(school_dict.get(title_col, '')).strip() if pd.notna(school_dict.get(title_col)) else '',
                         'bio': str(school_dict.get(bio_col, '')).strip() if pd.notna(school_dict.get(bio_col)) else '',
                         'confidence': 100,  # Pre-researched contacts are high confidence
@@ -98,11 +107,21 @@ def upload():
                     }
                     contacts.append(contact)
 
+                    # DEBUG: Print each school-contact mapping
+                    print(f"  Row {row_idx}: {school_name} -> {contact_name} ({contact_email})")
+
             # Add pre-researched contacts to school data
             if contacts:
                 school_dict['_preresearched_contacts'] = contacts
+                print(f"✓ School '{school_name}' has {len(contacts)} contacts")
+            else:
+                print(f"⚠ School '{school_name}' has NO pre-researched contacts (will use web search)")
 
             schools.append(school_dict)
+
+        print(f"\n{'='*60}")
+        print(f"Total schools parsed: {len(schools)}")
+        print(f"{'='*60}\n")
 
         # Store in session file
         session_data = {

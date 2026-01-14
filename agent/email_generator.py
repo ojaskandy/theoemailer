@@ -107,12 +107,19 @@ class EmailGenerator:
         emails = []
         for contact_idx, contact in enumerate(contacts, 1):
             contact_name = contact.get('name') or contact.get('email')
+            contact_email = contact.get('email', 'NO_EMAIL')
             update_progress("generating", f"Writing email {contact_idx}/{len(contacts)} for {contact_name}")
-            print(f"  Generating email for {contact_name}...")
+            print(f"  Generating email for {contact_name} ({contact_email}) at {school_name}")
 
             email_result = self._generate_and_validate_email(
                 template, school_data_with_number, contact
             )
+
+            # DEBUG: Verify the email result has correct contact info
+            result_email = email_result.get('email', {}).get('recipient_email', 'UNKNOWN')
+            if result_email != contact_email:
+                print(f"  ⚠️ EMAIL MISMATCH: Expected {contact_email}, got {result_email}")
+
             emails.append(email_result)
 
         update_progress("complete", f"Generated {len(emails)} emails")
@@ -301,8 +308,20 @@ class EmailGenerator:
                 if quality and quality.get('flags'):
                     flags.extend(quality['flags'])
 
+                # VALIDATION: Check that email domain reasonably matches school
+                recipient_email = email.get('recipient_email', '')
+                if recipient_email and '@' in recipient_email:
+                    email_domain = recipient_email.split('@')[1].lower()
+                    school_lower = school_name.lower()
+                    # Check if any significant word from school name appears in email domain
+                    school_words = [w for w in school_lower.replace("'", "").split() if len(w) > 3 and w not in ['school', 'academy', 'prep', 'the', 'of']]
+                    domain_match = any(word in email_domain for word in school_words)
+                    if not domain_match:
+                        print(f"⚠️  DOMAIN MISMATCH: School '{school_name}' has contact with email '{recipient_email}'")
+                        flags.append('DOMAIN_MISMATCH')
+
                 row = {
-                    'Recipient Email': email.get('recipient_email', ''),
+                    'Recipient Email': recipient_email,
                     'Recipient Name': email.get('recipient_name', ''),
                     'School Name': school_name,
                     'Subject': email.get('subject', ''),

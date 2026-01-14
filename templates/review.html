@@ -516,14 +516,15 @@
             const emails = [];
 
             document.querySelectorAll('.email-card').forEach((card, index) => {
-                const recipient = card.querySelector('h3').textContent;
-                const school = card.querySelector('p').textContent.replace('School: ', '');
+                const schoolName = card.querySelector('h3').textContent;
+                const contactInfo = card.querySelector('p').textContent;
                 const subject = card.querySelector('input[data-field="Subject"]').value;
                 const body = card.querySelector('textarea[data-field="Body"]').value;
 
                 emails.push(`================================================================================
-EMAIL ${index + 1}: ${recipient}
-SCHOOL: ${school}
+EMAIL ${index + 1}
+SCHOOL: ${schoolName}
+TO: ${contactInfo}
 ================================================================================
 SUBJECT: ${subject}
 
