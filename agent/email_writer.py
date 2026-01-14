@@ -117,7 +117,7 @@ RECIPIENT:
 {f"- Background: {contact_bio}" if contact_bio else ""}
 
 PERSONALIZATION GUIDANCE:
-{f"Use the recipient's background to personalize the email. Reference relevant experience like prior schools, EdTech adoption, gifted programs, or academic credentials when appropriate. Make it feel researched, not generic." if contact_bio else "No background info available - focus on school-specific pain points from the data above."}
+{f"Use the recipient's background to personalize the P.S. Reference relevant experience like prior schools, EdTech adoption, gifted programs, or academic credentials to find a genuine connection." if contact_bio else "Focus on the school's positive attributes and initiatives from the data above."}
 
 IMPORTANT - CONSISTENT NUMBER FOR THIS SCHOOL:
 Use the number {random_number} wherever the template requires a random number (e.g., "X teachers are in schools similar to...").
