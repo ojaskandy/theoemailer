@@ -104,6 +104,25 @@ def upload():
 
             schools.append(school_dict)
 
+        # Validate contact counts (2-3 contacts per school)
+        validation_warnings = []
+        for school_dict in schools:
+            school_name = school_dict.get('School name', 'Unknown')
+            contacts = school_dict.get('_preresearched_contacts', [])
+            contact_count = len(contacts)
+
+            if contact_count < 2:
+                validation_warnings.append(f"{school_name}: Only {contact_count} contact(s) - need at least 2")
+            elif contact_count > 3:
+                validation_warnings.append(f"{school_name}: {contact_count} contacts - recommend max 3")
+
+        # If there are validation warnings, return error
+        if validation_warnings:
+            return jsonify({
+                'error': 'Contact validation failed',
+                'details': validation_warnings
+            }), 400
+
         # Store in session file
         session_data = {
             'csv_path': csv_path,
